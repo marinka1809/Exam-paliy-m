@@ -1,0 +1,47 @@
+@font-face {
+  font-family: "Alternate Got No 1 D";
+  src: url('../fonts/Alternate Gothic No1 D Regular.otf');
+  src: url('../fonts/Alternate Gothic No1 D Regular.eot');
+  src: url('../fonts/Alternate Gothic No1 D Regular.svg');
+  src: url('../fonts/Alternate Gothic No1 D Regular.woff');
+}
+
+$second-color: #d81406;
+$title-font: 'Alternate Got No 1 D';
+
+@import "reset";
+
+body {
+  color: #b5cbd1;
+}
+
+ul {
+  list-style: none;
+}
+
+main {
+  padding-bottom: 50px;
+}
+
+.section-header {
+  margin-bottom: 30px;
+  border-bottom: 3px solid $second-color;
+
+  h1,
+  h2  {
+    font-family: $title-font;
+    font-size: 25px;
+    line-height: 1.4em;
+    text-transform: uppercase;
+  }
+}
+
+
+
+
+
+
+@import "responsive/media768";
+@import "responsive/media992";
+@import "responsive/media1200";
+@import "responsive/media1400";

@@ -53,3 +53,6 @@ Thumbs.db
 # SASS #
 ##########
 .sass-cache
+
+.idea/
+node_modules
