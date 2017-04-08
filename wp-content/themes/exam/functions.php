@@ -42,6 +42,8 @@ function exam_setup() {
 	 */
 	add_theme_support( 'post-thumbnails' );
 
+    add_image_size( 'portfolio', 364, 322, true );
+
 	// This theme uses wp_nav_menu() in one location.
 	register_nav_menus( array(
 		'menu-1' => esc_html__( 'Primary', 'exam' ),
@@ -101,6 +103,121 @@ function exam_widgets_init() {
 }
 add_action( 'widgets_init', 'exam_widgets_init' );
 
+function my_extra_fields() {
+    global $post;
+    if ( $post->post_name == home ) {
+
+        add_meta_box( 'section_welcome', 'Welcome section ', 'section_welcome_box_func', 'page', 'normal', 'high'  );
+        add_meta_box( 'section_services', 'Services section ', 'section_services_box_func', 'page', 'normal', 'high'  );
+        add_meta_box( 'section_portfolio', 'Portfolio section ', 'section_portfolio_box_func', 'page', 'normal', 'high'  );
+    };
+    add_meta_box( 'link-clients', 'Link ', 'link_clients_section_func', 'clients', 'normal', 'high'  );
+    add_meta_box( 'label-category', 'Label (category) ', 'label_func', 'portfolio', 'normal', 'high'  );
+}
+add_action('add_meta_boxes', 'my_extra_fields', 1);
+
+// Block code
+
+function section_welcome_box_func( $post ){ ?>
+    <ul>
+        <li>
+            <label>Section title:
+                <input type="text" name="extra[welcome-title]" value="<?php echo get_post_meta($post->ID, 'welcome-title', 1); ?>" style="width:30%;" />
+            </label>
+        </li>
+        <li>
+            <label>Section description:
+                <textarea type="text" name="extra[welcome-description]" style="width:100%;height:50px;"><?php echo get_post_meta($post->ID, 'welcome-description', 1); ?></textarea>
+            </label>
+        </li>
+        <li>
+            <input type="hidden" name="extra[welcome-display]" value="">
+            <label><input type="checkbox" name="extra[welcome-display]" value="1" <?php checked( get_post_meta($post->ID, 'welcome-display', 1), 1 ) ?>"> Display ?</label>
+        </li>
+    </ul>
+
+    <input type="hidden" name="extra_fields_nonce" value="<?php echo wp_create_nonce(__FILE__); ?>" />
+    <?php
+}
+
+function section_services_box_func( $post ){ ?>
+    <ul>
+        <li>
+            <label>Section title:
+                <input type="text" name="extra[services-title]" value="<?php echo get_post_meta($post->ID, 'services-title', 1); ?>" style="width:30%;" />
+            </label>
+        </li>
+        <li>
+            <label>Section description:
+                <textarea type="text" name="extra[services-description]" style="width:100%;height:50px;"><?php echo get_post_meta($post->ID, 'services-description', 1); ?></textarea>
+            </label>
+        </li>
+        <li>
+            <input type="hidden" name="extra[info-display]" value="">
+            <label><input type="checkbox" name="extra[info-display]" value="1" <?php checked( get_post_meta($post->ID, 'info-display', 1), 1 ) ?>"> Display ?</label>
+        </li>
+    </ul>
+
+    <input type="hidden" name="extra_fields_nonce" value="<?php echo wp_create_nonce(__FILE__); ?>" />
+    <?php
+}
+
+function section_portfolio_box_func( $post ){ ?>
+    <ul>
+        <li>
+            <label>Section title:
+                <input type="text" name="extra[portfolio-title]" value="<?php echo get_post_meta($post->ID, 'portfolio-title', 1); ?>" style="width:30%;" />
+            </label>
+        </li>
+        <li>
+            <label>Section description:
+                <textarea type="text" name="extra[portfolio-description]" style="width:100%;height:50px;"><?php echo get_post_meta($post->ID, 'portfolio-description', 1); ?></textarea>
+            </label>
+        </li>
+        <li>
+            <input type="hidden" name="extra[portfolio-display]" value="">
+            <label><input type="checkbox" name="extra[portfolio-display]" value="1" <?php checked( get_post_meta($post->ID, 'portfolio-display', 1), 1 ) ?>"> Display ?</label>
+        </li>
+    </ul>
+
+    <input type="hidden" name="extra_fields_nonce" value="<?php echo wp_create_nonce(__FILE__); ?>" />
+    <?php
+}
+function link_clients_section_func( $post ){ ?>
+    <input type="text" name="extra[link_client]" value="<?php echo get_post_meta($post->ID, 'link_client', 1); ?>" style="width:40%;" />
+    <input type="hidden" name="extra_fields_nonce" value="<?php echo wp_create_nonce(__FILE__); ?>" />
+    <?php
+}
+function label_func( $post ){ ?>
+    <input type="text" name="extra[label-image]" value="<?php echo get_post_meta($post->ID, 'label-image', 1); ?>" style="width:40%;" />
+    <input type="hidden" name="extra_fields_nonce" value="<?php echo wp_create_nonce(__FILE__); ?>" />
+    <?php
+}
+
+/* Save the data, if you save the post */
+function my_extra_fields_update( $post_id ){
+    if ( ! wp_verify_nonce($_POST['extra_fields_nonce'], __FILE__) ) return false; // Test
+    if ( defined('DOING_AUTOSAVE') && DOING_AUTOSAVE  ) return false; // Exit if this autosave
+    if ( !current_user_can('edit_post', $post_id) ) return false; // Exit if the user does not have the right to edit the record
+
+    if( !isset($_POST['extra']) ) return false; // If there is no data? left
+
+    // Все ОК! Теперь, нужно сохранить/удалить данные
+    $_POST['extra'] = array_map('trim', $_POST['extra']); // Clean all data from spaces at the edges
+    foreach( $_POST['extra'] as $key=>$value ){
+        if( empty($value) ){
+            delete_post_meta($post_id, $key); // Delete the field if the value is empty
+            continue;
+        }
+
+        update_post_meta($post_id, $key, $value); // add_post_meta() работает автоматически
+    }
+    return $post_id;
+}
+
+add_action('save_post', 'my_extra_fields_update', 0);
+
+
 /**
  * Enqueue scripts and styles.
  */
@@ -128,6 +245,11 @@ add_action( 'wp_enqueue_scripts', 'exam_scripts' );
 require get_template_directory() . '/inc/custom-header.php';
 
 /**
+ * Implement the Custom Logo.
+ */
+require get_template_directory() . '/inc/custom-logo.php';
+
+/**
  * Custom template tags for this theme.
  */
 require get_template_directory() . '/inc/template-tags.php';
@@ -146,3 +268,9 @@ require get_template_directory() . '/inc/customizer.php';
  * Load Jetpack compatibility file.
  */
 require get_template_directory() . '/inc/jetpack.php';
+
+
+/**
+ * Custom post type
+ */
+require get_template_directory() . '/inc/custom-post-type.php';
